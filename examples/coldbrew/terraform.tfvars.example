@@ -1,0 +1,10 @@
+storage_path = "/absolute/path/to/data/storage"
+
+# world_path         = "/path/to/world"
+# taproom_chart_path = "/path/to/taproom/ops/charts/taproom"
+# taproom_tag        = "1.0.1"
+# aquor_chart_path   = "/path/to/aquor/ops/helm/aquor"
+# aquor_tag          = "1.8.1"
+# aquor_values       = []
+# areo_chart_path    = "/path/to/areo/ops/charts"
+# dags_revision      = "full-commit-sha"
