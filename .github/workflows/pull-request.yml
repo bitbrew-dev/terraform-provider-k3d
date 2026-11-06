@@ -19,6 +19,8 @@ jobs:
     name: pre-commit checks
     uses: bitbrew-dev/reusable-workflows/.github/workflows/prek.yml@main
     secrets: inherit
+    with:
+      runner: k3d-arm64
 
   pr-labeler:
     runs-on: ubuntu-latest
