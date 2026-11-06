@@ -1,7 +1,9 @@
 BINARY := terraform-provider-k3d
 DIST   := dist
 
-.PHONY: build test testacc vet tidy validate-examples docs
+GORELEASER := go run github.com/goreleaser/goreleaser/v2@v2.20.0
+
+.PHONY: build test testacc vet tidy validate-examples docs release-check
 
 build:
 	go build -o $(DIST)/$(BINARY) .
@@ -23,3 +25,7 @@ validate-examples:
 
 docs:
 	go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@v0.25.0 generate --provider-name k3d --rendered-provider-name k3d
+
+release-check:
+	$(GORELEASER) check
+	$(GORELEASER) release --snapshot --clean --skip=sign

@@ -62,3 +62,16 @@ With `dev_overrides`, skip `terraform init` and run `terraform plan` directly. T
 | `make testacc` | Acceptance tests against real clusters on local Docker. Takes about 30 minutes and needs internet access |
 | `make validate-examples` | Validates the examples against a build of this checkout |
 | `make docs` | Regenerates [docs](docs) from the schemas and `examples/` |
+| `make release-check` | Validates the GoReleaser config and builds unsigned release archives into `dist/` |
+
+## Releasing
+
+Run the `semantic-release` workflow on `main` and set `prompt` to `true`.
+
+1. `semantic-release` picks the version from the commits, pushes the `v`-prefixed tag, and creates a draft release with the notes.
+2. GoReleaser builds the zips, signs the checksums, attaches them to the draft, and publishes it.
+3. The Terraform Registry picks up the release when it is published, so it never sees a release without its files.
+
+If the GoReleaser job fails, the release stays a draft. Fix the cause and re-run the failed job.
+
+The workflow needs the `GPG_PRIVATE_KEY` and `PASSPHRASE` repository secrets. The key must be RSA, because the Registry does not accept the default ECC type, and its public key must be added to the Registry's signing keys.
