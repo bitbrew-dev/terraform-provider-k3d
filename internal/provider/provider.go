@@ -106,6 +106,7 @@ func (p *K3dProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewManifestResource,
 		NewHelmReleaseResource,
 		NewIstioResource,
+		NewArgoApplicationResource,
 	}
 }
 
