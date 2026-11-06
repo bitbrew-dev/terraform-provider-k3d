@@ -142,5 +142,5 @@
       }
     ]
   },
-  "tagFormat": "${version}"
+  "tagFormat": "v${version}"
 }
