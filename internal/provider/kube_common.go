@@ -86,18 +86,22 @@ func connectionValidators() []resource.ConfigValidator {
 // never while planning a new object, so an object can share an apply with the
 // cluster it lives in.
 func connect(ctx context.Context, cluster, kubeconfig types.String) (*kube.Client, error) {
-	raw := kubeconfig.ValueString()
-	if !cluster.IsNull() {
-		var err error
-		raw, err = k3dclient.GetKubeconfig(ctx, cluster.ValueString())
-		if errors.Is(err, k3dclient.ErrNotFound) {
-			return nil, fmt.Errorf("%w: %s", errClusterGone, cluster.ValueString())
-		}
-		if err != nil {
-			return nil, err
-		}
+	raw, err := resolveKubeconfig(ctx, cluster, kubeconfig)
+	if err != nil {
+		return nil, err
 	}
 	return kube.New(raw)
+}
+
+func resolveKubeconfig(ctx context.Context, cluster, kubeconfig types.String) (string, error) {
+	if cluster.IsNull() {
+		return kubeconfig.ValueString(), nil
+	}
+	raw, err := k3dclient.GetKubeconfig(ctx, cluster.ValueString())
+	if errors.Is(err, k3dclient.ErrNotFound) {
+		return "", fmt.Errorf("%w: %s", errClusterGone, cluster.ValueString())
+	}
+	return raw, err
 }
 
 // isGone reports whether an error means the object no longer exists, either on
