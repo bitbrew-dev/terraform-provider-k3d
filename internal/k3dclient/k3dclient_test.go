@@ -51,6 +51,10 @@ func TestUnreachableDockerIsNotNotFound(t *testing.T) {
 	reads := map[string]func() error{
 		"GetCluster":  func() error { _, err := GetCluster(ctx, "any"); return err },
 		"GetRegistry": func() error { _, err := GetRegistry(ctx, "any"); return err },
+		"GetKubeconfig": func() error {
+			_, err := GetKubeconfig(ctx, "any")
+			return err
+		},
 		"DeleteCluster": func() error {
 			return DeleteCluster(ctx, "any")
 		},

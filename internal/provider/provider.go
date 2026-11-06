@@ -99,6 +99,11 @@ func (p *K3dProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewClusterResource,
 		NewRegistryResource,
+		NewNamespaceResource,
+		NewConfigMapResource,
+		NewSecretResource,
+		NewJobResource,
+		NewManifestResource,
 	}
 }
 
