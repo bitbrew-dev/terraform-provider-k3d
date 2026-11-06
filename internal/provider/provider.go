@@ -3,6 +3,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"regexp"
 
@@ -28,12 +29,6 @@ var _ provider.Provider = (*K3dProvider)(nil)
 // K3dProvider is the Terraform provider for k3d clusters and their workloads.
 type K3dProvider struct {
 	version string
-}
-
-// Config is the resolved provider configuration shared with resources and data sources.
-type Config struct {
-	// DockerHost is the Docker endpoint. Empty means the Docker client default.
-	DockerHost string
 }
 
 type providerModel struct {
@@ -70,7 +65,9 @@ func (p *K3dProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *
 	}
 }
 
-// Configure resolves the provider configuration for resources and data sources.
+// Configure points the k3d library at the configured Docker endpoint. k3d reads
+// DOCKER_HOST from the process environment on every call, so this is the only
+// way to select it, and it applies to this whole provider process.
 func (p *K3dProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	var data providerModel
 
@@ -88,22 +85,27 @@ func (p *K3dProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		return
 	}
 
-	dockerHost := data.DockerHost.ValueString()
 	if data.DockerHost.IsNull() {
-		dockerHost = os.Getenv(dockerHostEnv)
+		return
 	}
 
-	cfg := &Config{DockerHost: dockerHost}
-	resp.DataSourceData = cfg
-	resp.ResourceData = cfg
+	if err := os.Setenv(dockerHostEnv, data.DockerHost.ValueString()); err != nil {
+		resp.Diagnostics.AddError("Failed to set Docker host", fmt.Sprintf("set %s: %s", dockerHostEnv, err))
+	}
 }
 
 // Resources returns the resources the provider supports.
 func (p *K3dProvider) Resources(_ context.Context) []func() resource.Resource {
-	return nil
+	return []func() resource.Resource{
+		NewClusterResource,
+		NewRegistryResource,
+	}
 }
 
 // DataSources returns the data sources the provider supports.
 func (p *K3dProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return nil
+	return []func() datasource.DataSource{
+		NewClusterDataSource,
+		NewRegistryDataSource,
+	}
 }
