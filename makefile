@@ -1,7 +1,7 @@
 BINARY := terraform-provider-k3d
 DIST   := dist
 
-.PHONY: build test testacc vet tidy
+.PHONY: build test testacc vet tidy validate-examples
 
 build:
 	go build -o $(DIST)/$(BINARY) .
@@ -17,3 +17,6 @@ vet:
 
 tidy:
 	go mod tidy
+
+validate-examples:
+	./scripts/validate-examples.sh
