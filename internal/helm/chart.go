@@ -116,7 +116,9 @@ func LocalDigest(path string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("read chart file %s: %w", relative, err)
 		}
-		hash.Write([]byte(fmt.Sprintf("%s\x00%d\x00", filepath.ToSlash(relative), len(content))))
+		if _, err := fmt.Fprintf(hash, "%s\x00%d\x00", filepath.ToSlash(relative), len(content)); err != nil {
+			return "", fmt.Errorf("hash chart file %s: %w", relative, err)
+		}
 		hash.Write(content)
 	}
 	return hex.EncodeToString(hash.Sum(nil)), nil
