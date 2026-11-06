@@ -64,7 +64,9 @@
     [
       "@semantic-release/github",
       {
-        "githubUrl": "https://api.github.com"
+        "draftRelease": true,
+        "githubUrl": "https://api.github.com",
+        "releaseNameTemplate": "\ud83d\udd78\ufe0f K3d TF <%= nextRelease.gitTag %>"
       }
     ]
   ],

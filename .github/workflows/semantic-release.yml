@@ -15,6 +15,7 @@ on:
 jobs:
   semantic-release:
     name: semantic-release
+    if: ${{ inputs.prompt == 'true' }}
     uses: bitbrew-dev/reusable-workflows/.github/workflows/semantic-release.yml@main
     permissions:
       contents: read
@@ -23,5 +24,35 @@ jobs:
       statuses: read
       packages: read
     secrets: inherit
-    with:
-      new_version_title: "🕸️ K3d TF"
+
+  goreleaser:
+    name: goreleaser
+    needs: semantic-release
+    if: ${{ needs.semantic-release.outputs.new_release == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.semantic-release.outputs.new_release_tag }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+      - name: run GoReleaser
+        uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
+        with:
+          version: v2.20.0
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
