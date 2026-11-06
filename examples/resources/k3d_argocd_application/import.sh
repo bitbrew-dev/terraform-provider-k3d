@@ -1,0 +1,1 @@
+terraform import k3d_argocd_application.guestbook demo/argocd/guestbook
