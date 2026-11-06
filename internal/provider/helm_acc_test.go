@@ -84,11 +84,16 @@ func testAccWriteFile(t *testing.T, dir, name, content string) {
 
 func testAccHelmClient(t *testing.T, cluster string) *helm.Client {
 	t.Helper()
+	return testAccHelmNamespaceClient(t, cluster, "default")
+}
+
+func testAccHelmNamespaceClient(t *testing.T, cluster, namespace string) *helm.Client {
+	t.Helper()
 	raw, err := k3dclient.GetKubeconfig(context.Background(), cluster)
 	if err != nil {
 		t.Fatal(err)
 	}
-	client, err := helm.New(raw, "default")
+	client, err := helm.New(raw, namespace)
 	if err != nil {
 		t.Fatal(err)
 	}
