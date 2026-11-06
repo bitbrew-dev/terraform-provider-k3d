@@ -138,17 +138,24 @@ func (c *Client) afterFailure(name string) *Release {
 	return rel
 }
 
-// Uninstall removes a release. Removing a missing release is not an error.
+// Uninstall removes a release. Removing a missing release is not an error. When
+// a chart owns its namespace, uninstalling deletes the release's own record with
+// the namespace, so Helm reports a failure to purge what is already gone. An
+// error only counts if the release is still there afterwards.
 func (c *Client) Uninstall(name string, wait bool, timeout time.Duration) error {
 	uninstall := action.NewUninstall(c.cfg)
 	uninstall.IgnoreNotFound = true
 	uninstall.WaitStrategy = waitStrategy(wait)
 	uninstall.Timeout = timeout
 
-	if _, err := uninstall.Run(name); err != nil {
-		return fmt.Errorf("uninstall release %s: %w", name, err)
+	_, err := uninstall.Run(name)
+	if err == nil {
+		return nil
 	}
-	return nil
+	if _, getErr := c.Get(name); errors.Is(getErr, ErrNotFound) {
+		return nil
+	}
+	return fmt.Errorf("uninstall release %s: %w", name, err)
 }
 
 func toRelease(rel release.Releaser) (*Release, error) {

@@ -1,10 +1,13 @@
 package provider
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -150,4 +153,68 @@ func TestPlanChartDigest(t *testing.T) {
 			t.Error("expected an error")
 		}
 	})
+}
+
+func TestChartSourceRefusesAChartChangedAfterPlan(t *testing.T) {
+	chart := writeTestChart(t)
+	digest, diags := planChartDigest(helmReleaseModel{SrcPath: types.StringValue(chart), ExpectedChartDigest: types.StringNull()})
+	if diags.HasError() {
+		t.Fatal(diags)
+	}
+	model := helmReleaseModel{SrcPath: types.StringValue(chart), ChartDigest: digest}
+
+	if _, err := chartSource(model); err != nil {
+		t.Fatalf("unchanged chart: %v", err)
+	}
+
+	if err := os.WriteFile(filepath.Join(chart, "values.yaml"), []byte("a: 1\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := chartSource(model); err == nil || !strings.Contains(err.Error(), "changed after the plan") {
+		t.Errorf("err = %v, want a changed-after-plan error", err)
+	}
+}
+
+func TestPrepareReleaseMergesValuesInOrder(t *testing.T) {
+	ctx := context.Background()
+	chart := writeTestChart(t)
+	digest, diags := planChartDigest(helmReleaseModel{SrcPath: types.StringValue(chart), ExpectedChartDigest: types.StringNull()})
+	if diags.HasError() {
+		t.Fatal(diags)
+	}
+	list := func(values ...string) types.List {
+		l, d := types.ListValueFrom(ctx, types.StringType, values)
+		if d.HasError() {
+			t.Fatal(d)
+		}
+		return l
+	}
+
+	plan := helmReleaseModel{
+		Name:        types.StringValue("demo"),
+		Namespace:   types.StringValue("apps"),
+		SrcPath:     types.StringValue(chart),
+		ChartDigest: digest,
+		Timeout:     types.StringValue("1m"),
+		Values:      list("a: from-values\nb: from-values\nc: from-values\n"),
+		Set:         testMap(t, map[string]string{"c": "from-set"}),
+		Wait:        types.BoolValue(true),
+		MaxHistory:  types.Int64Value(3),
+	}
+	config := helmReleaseModel{ValuesWO: list("b: from-write-only\nc: from-write-only\n")}
+
+	ch, values, options, diags := prepareRelease(ctx, plan, config)
+	if diags.HasError() {
+		t.Fatal(diags)
+	}
+	if ch == nil {
+		t.Error("expected a chart")
+	}
+	want := map[string]any{"a": "from-values", "b": "from-write-only", "c": "from-set"}
+	if !reflect.DeepEqual(values, want) {
+		t.Errorf("values = %v, want %v", values, want)
+	}
+	if options.Name != "demo" || options.Namespace != "apps" || !options.Wait || options.MaxHistory != 3 || options.Timeout != time.Minute {
+		t.Errorf("options = %+v", options)
+	}
 }
