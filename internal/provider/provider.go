@@ -115,5 +115,9 @@ func (p *K3dProvider) DataSources(_ context.Context) []func() datasource.DataSou
 	return []func() datasource.DataSource{
 		NewClusterDataSource,
 		NewRegistryDataSource,
+		NewContextDataSource,
+		NewNamespaceDataSource,
+		NewConfigMapDataSource,
+		NewSecretDataSource,
 	}
 }
