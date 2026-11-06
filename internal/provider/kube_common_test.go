@@ -269,3 +269,30 @@ func TestObjectID(t *testing.T) {
 		t.Errorf("got %q", got)
 	}
 }
+
+func TestNamespaceOrDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		in   types.String
+		want string
+	}{
+		{"null", types.StringNull(), "default"},
+		{"unknown", types.StringUnknown(), "default"},
+		{"empty", types.StringValue(""), "default"},
+		{"set", types.StringValue("apps"), "apps"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := namespaceOrDefault(tt.in); got != tt.want {
+				t.Errorf("got %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestStringMapValueTreatsNilAsEmpty(t *testing.T) {
+	got, diags := stringMapValue(context.Background(), nil)
+	if diags.HasError() || got.IsNull() || len(got.Elements()) != 0 {
+		t.Errorf("got %v (%v), want an empty map", got, diags)
+	}
+}

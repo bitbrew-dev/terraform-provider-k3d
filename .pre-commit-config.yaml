@@ -12,7 +12,9 @@ repos:
       hooks:
         - id: terraform_fmt
         - id: terraform_validate
+          exclude: ^examples/
         - id: terraform_trivy
+          exclude: ^examples/
     - repo: https://github.com/pre-commit/pre-commit-hooks
       rev: v6.0.0
       hooks:

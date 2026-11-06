@@ -198,3 +198,44 @@ users:
 		t.Error("a different kubeconfig must not share a client")
 	}
 }
+
+func TestCurrentContext(t *testing.T) {
+	const kubeconfig = `
+apiVersion: v1
+kind: Config
+clusters:
+- name: k3d-demo
+  cluster:
+    server: https://0.0.0.0:6445
+contexts:
+- name: k3d-demo
+  context:
+    cluster: k3d-demo
+    user: admin@k3d-demo
+    namespace: app
+current-context: k3d-demo
+users:
+- name: admin@k3d-demo
+  user: {}
+`
+	got, err := CurrentContext(kubeconfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := Context{Name: "k3d-demo", ClusterName: "k3d-demo", UserName: "admin@k3d-demo", Namespace: "app", Host: "https://0.0.0.0:6445"}
+	if got != want {
+		t.Errorf("got %+v, want %+v", got, want)
+	}
+
+	for name, bad := range map[string]string{
+		"invalid":            "not: [yaml",
+		"no current context": "apiVersion: v1\nkind: Config\n",
+		"missing cluster":    strings.ReplaceAll(kubeconfig, "cluster: k3d-demo", "cluster: other"),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if _, err := CurrentContext(bad); err == nil {
+				t.Error("expected an error")
+			}
+		})
+	}
+}
