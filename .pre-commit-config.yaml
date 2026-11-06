@@ -1,0 +1,52 @@
+repos:
+    - repo: https://github.com/benbenbang/pre-commit-golang
+      rev: 1.3.0
+      hooks:
+        - id: go-fmt
+        - id: go-vet
+        - id: validate-toml
+        - id: go-unit-tests
+        - id: go-mod-tidy
+    - repo: https://github.com/antonbabenko/pre-commit-terraform
+      rev: v1.109.4
+      hooks:
+        - id: terraform_fmt
+        - id: terraform_validate
+        - id: terraform_trivy
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v6.0.0
+      hooks:
+        - id: check-yaml
+          args:
+            - --allow-multiple-documents
+            - --unsafe
+        - id: end-of-file-fixer
+        - id: trailing-whitespace
+        - id: check-added-large-files
+          args:
+            - --maxkb=1024
+          stages:
+            - pre-commit
+        - id: requirements-txt-fixer
+        - id: check-merge-conflict
+        - id: debug-statements
+        - id: pretty-format-json
+          args:
+            - --autofix
+            - --indent=2
+    - repo: local
+      hooks:
+        - id: check-extension
+          name: check ipynb
+          args:
+            - ipynb
+          entry: ./scripts/check_extension.sh
+          language: script
+        - id: validate-commit-msg
+          name: commit message is valid
+          args:
+            - --negate
+          entry: ^(build|ci|docs|feat|fix|perf|refactor|style|test|revert|hotfix|ops|chore|incompat)\([\w,\.,\-,\(,\),\/]+\)(!?)(:)\s{1}([\w,\W,:]+)$
+          language: pygrep
+          stages:
+            - commit-msg
