@@ -246,6 +246,21 @@ func (c *Client) WaitReady(ctx context.Context, ref Ref, timeout time.Duration) 
 	})
 }
 
+// WaitFor waits until done reports true for an object, and returns the last
+// version it saw, so a caller can report its status after a failure too.
+func (c *Client) WaitFor(ctx context.Context, ref Ref, timeout time.Duration, description string, done func(*unstructured.Unstructured) (bool, error)) (*unstructured.Unstructured, error) {
+	var latest *unstructured.Unstructured
+	err := poll(ctx, timeout, fmt.Sprintf("%s %s", ref, description), func() (bool, error) {
+		obj, err := c.Get(ctx, ref)
+		if err != nil {
+			return false, err
+		}
+		latest = obj
+		return done(obj)
+	})
+	return latest, err
+}
+
 // WaitJob waits for a Job to finish and returns an error describing any failure.
 func (c *Client) WaitJob(ctx context.Context, namespace, name string, timeout time.Duration) error {
 	ref := Ref{APIVersion: "batch/v1", Kind: "Job", Namespace: namespace, Name: name}
