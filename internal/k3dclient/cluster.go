@@ -306,6 +306,24 @@ func GetCluster(ctx context.Context, name string) (*ClusterState, error) {
 	return state, nil
 }
 
+// GetKubeconfig returns a cluster's kubeconfig. It skips the full cluster read
+// so that Kubernetes resources can call it often, and returns ErrNotFound only
+// when Docker answered and has no nodes for the name.
+func GetKubeconfig(ctx context.Context, name string) (string, error) {
+	nodes, err := runtimes.SelectedRuntime.GetNodesByLabel(ctx, map[string]string{k3d.LabelClusterName: name})
+	if err != nil {
+		return "", fmt.Errorf("list nodes of cluster %q: %w", name, err)
+	}
+	if len(nodes) == 0 {
+		return "", fmt.Errorf("cluster %q: %w", name, ErrNotFound)
+	}
+	kubeconfig, err := getKubeconfig(ctx, &k3d.Cluster{Name: name})
+	if err != nil {
+		return "", err
+	}
+	return kubeconfig.Raw, nil
+}
+
 func getRawCluster(ctx context.Context, name string) (*k3d.Cluster, error) {
 	nodes, err := runtimes.SelectedRuntime.GetNodesByLabel(ctx, map[string]string{k3d.LabelClusterName: name})
 	if err != nil {
