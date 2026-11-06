@@ -1,0 +1,19 @@
+enhancement:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "internal/**/*.go"
+
+workflows:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**/*"
+          - ".releaserc.json"
+          - ".pre-commit-config.yaml"
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - README.md
+          - "**/*.md"
+          - "docs/**/*.md"
+          - "docs/mkdocs.yml"
