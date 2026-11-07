@@ -328,7 +328,7 @@ func (d *contextDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 		MarkdownDescription: "Reads the kubeconfig context of a k3d cluster, or the current context of a kubeconfig, without contacting the Kubernetes API. Use `k3d_cluster` to also get credentials.",
 		Attributes: withAttributes(dataConnectionAttributes(), map[string]schema.Attribute{
 			"id":           computed("The context name."),
-			"name":         computed("Context name, such as `k3d-coldbrew`."),
+			"name":         computed("Context name, such as `k3d-demo`."),
 			"cluster_name": computed("Name of the context's cluster entry."),
 			"user_name":    computed("Name of the context's user entry."),
 			"namespace":    computed("Default namespace of the context, if any."),

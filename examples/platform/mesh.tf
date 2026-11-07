@@ -18,12 +18,12 @@ locals {
 }
 
 resource "k3d_namespace" "istio_system" {
-  cluster = k3d_cluster.coldbrew.id
+  cluster = k3d_cluster.platform.id
   name    = "istio-system"
 }
 
 resource "k3d_istio" "mesh" {
-  cluster   = k3d_cluster.coldbrew.id
+  cluster   = k3d_cluster.platform.id
   namespace = k3d_namespace.istio_system.name
   version   = var.istio_version
 
@@ -46,7 +46,7 @@ resource "k3d_istio" "mesh" {
 resource "k3d_namespace" "plain" {
   for_each = local.plain_namespaces
 
-  cluster = k3d_cluster.coldbrew.id
+  cluster = k3d_cluster.platform.id
   name    = each.key
   labels  = each.value
 }
@@ -54,7 +54,7 @@ resource "k3d_namespace" "plain" {
 resource "k3d_namespace" "injected" {
   for_each = local.injected_namespaces
 
-  cluster = k3d_cluster.coldbrew.id
+  cluster = k3d_cluster.platform.id
   name    = each.key
   labels  = merge(each.value, { "istio-injection" = "enabled" })
 
@@ -62,7 +62,7 @@ resource "k3d_namespace" "injected" {
 }
 
 resource "k3d_manifest" "default_gateway" {
-  cluster = k3d_cluster.coldbrew.id
+  cluster = k3d_cluster.platform.id
 
   manifest = yamlencode({
     apiVersion = "networking.istio.io/v1"
@@ -83,7 +83,7 @@ resource "k3d_manifest" "default_gateway" {
 resource "k3d_manifest" "default_deny_ingress" {
   for_each = local.protected_namespaces
 
-  cluster = k3d_cluster.coldbrew.id
+  cluster = k3d_cluster.platform.id
 
   manifest = yamlencode({
     apiVersion = "networking.k8s.io/v1"
@@ -96,7 +96,7 @@ resource "k3d_manifest" "default_deny_ingress" {
 resource "k3d_manifest" "allow_same_namespace" {
   for_each = local.protected_namespaces
 
-  cluster = k3d_cluster.coldbrew.id
+  cluster = k3d_cluster.platform.id
 
   manifest = yamlencode({
     apiVersion = "networking.k8s.io/v1"
@@ -113,7 +113,7 @@ resource "k3d_manifest" "allow_same_namespace" {
 resource "k3d_manifest" "allow_monitoring" {
   for_each = local.protected_namespaces
 
-  cluster = k3d_cluster.coldbrew.id
+  cluster = k3d_cluster.platform.id
 
   manifest = yamlencode({
     apiVersion = "networking.k8s.io/v1"

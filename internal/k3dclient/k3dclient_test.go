@@ -280,7 +280,7 @@ func TestCheckClusterName(t *testing.T) {
 		name    string
 		wantErr bool
 	}{
-		{"coldbrew", false},
+		{"platform", false},
 		{"tfacc-abc123", false},
 		{"", true},
 		{"has space", true},

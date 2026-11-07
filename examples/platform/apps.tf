@@ -1,7 +1,7 @@
 resource "k3d_helm_release" "taproom" {
   count = local.enable_taproom ? 1 : 0
 
-  cluster   = k3d_cluster.coldbrew.id
+  cluster   = k3d_cluster.platform.id
   namespace = local.namespace_names["app"]
   name      = "taproom"
   src_path  = abspath(var.taproom_chart_path)
@@ -17,7 +17,7 @@ resource "k3d_helm_release" "taproom" {
 resource "k3d_helm_release" "aquor" {
   count = local.enable_aquor ? 1 : 0
 
-  cluster   = k3d_cluster.coldbrew.id
+  cluster   = k3d_cluster.platform.id
   namespace = local.namespace_names["app"]
   name      = "aquor"
   src_path  = abspath(var.aquor_chart_path)
@@ -39,7 +39,7 @@ resource "k3d_helm_release" "aquor" {
 resource "k3d_helm_release" "areo" {
   count = local.enable_areo ? 1 : 0
 
-  cluster   = k3d_cluster.coldbrew.id
+  cluster   = k3d_cluster.platform.id
   namespace = local.namespace_names["airflow"]
   name      = "areo"
   src_path  = abspath(var.areo_chart_path)
@@ -53,7 +53,7 @@ resource "k3d_helm_release" "areo" {
 resource "k3d_argocd_application" "airflow_dags" {
   count = local.enable_areo ? 1 : 0
 
-  cluster   = k3d_cluster.coldbrew.id
+  cluster   = k3d_cluster.platform.id
   namespace = local.namespace_names["argocd"]
   name      = "airflow-dags"
 

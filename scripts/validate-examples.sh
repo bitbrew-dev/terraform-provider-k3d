@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Validates every example against the provider built from this checkout. The
-# provider is not published, so terraform init cannot find it: this uses
-# dev_overrides from a temporary CLI config and leaves ~/.terraformrc alone.
+# Validates every example against the provider built from this checkout, not the
+# published release: this uses dev_overrides from a temporary CLI config and
+# leaves ~/.terraformrc alone.
 
 set -euo pipefail
 

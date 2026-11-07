@@ -33,7 +33,7 @@ locals {
 resource "k3d_manifest" "world" {
   for_each = local.world_objects
 
-  cluster  = k3d_cluster.coldbrew.id
+  cluster  = k3d_cluster.platform.id
   manifest = yamlencode(each.value)
 
   depends_on = [k3d_secret.platform, k3d_namespace.plain, k3d_namespace.injected]
@@ -42,7 +42,7 @@ resource "k3d_manifest" "world" {
 resource "k3d_helm_release" "arc_controller" {
   count = local.enable_world ? 1 : 0
 
-  cluster       = k3d_cluster.coldbrew.id
+  cluster       = k3d_cluster.platform.id
   namespace     = k3d_namespace.plain["arc-systems"].name
   name          = "arc"
   chart         = "${local.arc_charts}/gha-runner-scale-set-controller"
@@ -53,7 +53,7 @@ resource "k3d_helm_release" "arc_controller" {
 resource "k3d_helm_release" "arc_runners" {
   count = local.enable_world ? 1 : 0
 
-  cluster       = k3d_cluster.coldbrew.id
+  cluster       = k3d_cluster.platform.id
   namespace     = k3d_namespace.plain["arc-runners"].name
   name          = "k3d-arm64"
   chart         = "${local.arc_charts}/gha-runner-scale-set"
