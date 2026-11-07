@@ -31,6 +31,6 @@ data "k3d_context" "main" {
 - `cluster_name` (String) Name of the context's cluster entry.
 - `host` (String) Kubernetes API URL.
 - `id` (String) The context name.
-- `name` (String) Context name, such as `k3d-coldbrew`.
+- `name` (String) Context name, such as `k3d-demo`.
 - `namespace` (String) Default namespace of the context, if any.
 - `user_name` (String) Name of the context's user entry.

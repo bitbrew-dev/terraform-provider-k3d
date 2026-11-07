@@ -1,5 +1,5 @@
 resource "k3d_helm_release" "argocd" {
-  cluster       = k3d_cluster.coldbrew.id
+  cluster       = k3d_cluster.platform.id
   namespace     = k3d_namespace.plain["argocd"].name
   name          = "argocd"
   repository    = "https://argoproj.github.io/argo-helm"
@@ -17,7 +17,7 @@ resource "k3d_helm_release" "argocd" {
 }
 
 resource "k3d_manifest" "argocd_nodeport" {
-  cluster = k3d_cluster.coldbrew.id
+  cluster = k3d_cluster.platform.id
 
   manifest = yamlencode({
     apiVersion = "v1"

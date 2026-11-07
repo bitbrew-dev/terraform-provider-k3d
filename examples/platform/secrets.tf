@@ -46,7 +46,7 @@ locals {
 resource "k3d_secret" "platform" {
   for_each = local.secrets
 
-  cluster         = k3d_cluster.coldbrew.id
+  cluster         = k3d_cluster.platform.id
   namespace       = local.namespace_names[split("/", each.key)[0]]
   name            = split("/", each.key)[1]
   type            = each.value.type

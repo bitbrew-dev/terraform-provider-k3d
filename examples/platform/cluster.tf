@@ -8,7 +8,7 @@ locals {
   )
 }
 
-resource "k3d_cluster" "coldbrew" {
+resource "k3d_cluster" "platform" {
   name    = var.cluster_name
   image   = var.k3s_image
   servers = var.servers
@@ -43,11 +43,11 @@ resource "k3d_cluster" "coldbrew" {
 
 output "kubeconfig" {
   description = "Kubeconfig for the cluster. Save it with: terraform output -raw kubeconfig > kubeconfig.yaml"
-  value       = k3d_cluster.coldbrew.kubeconfig
+  value       = k3d_cluster.platform.kubeconfig
   sensitive   = true
 }
 
 output "api" {
   description = "Kubernetes API URL."
-  value       = k3d_cluster.coldbrew.host
+  value       = k3d_cluster.platform.host
 }
