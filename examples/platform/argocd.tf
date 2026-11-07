@@ -26,7 +26,7 @@ resource "k3d_manifest" "argocd_nodeport" {
     spec = {
       type     = "NodePort"
       selector = { "app.kubernetes.io/name" = "argocd-server" }
-      ports    = [{ name = "http", port = 80, targetPort = 8080, nodePort = 30092 }]
+      ports    = [{ name = "http", port = 80, targetPort = 8080, nodePort = local.argocd_node_port }]
     }
   })
 

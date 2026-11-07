@@ -1,6 +1,7 @@
 locals {
   gateway_http_node_port  = 31035
   gateway_https_node_port = 30903
+  argocd_node_port        = 30092
 
   server_args = concat(
     [for san in var.tls_sans : "--tls-san=${san}"],
@@ -21,13 +22,11 @@ resource "k3d_cluster" "platform" {
     port = var.api_port
   }
 
-  ports = concat(
-    [
-      { host_ip = null, host_port = var.http_port, container_port = local.gateway_http_node_port, protocol = null },
-      { host_ip = null, host_port = var.https_port, container_port = local.gateway_https_node_port, protocol = null },
-    ],
-    [for host_port, node_port in var.admin_ports : { host_ip = null, host_port = tonumber(host_port), container_port = node_port, protocol = null }],
-  )
+  ports = [
+    { host_ip = null, host_port = var.http_port, container_port = local.gateway_http_node_port, protocol = null },
+    { host_ip = null, host_port = var.https_port, container_port = local.gateway_https_node_port, protocol = null },
+    { host_ip = null, host_port = var.argocd_port, container_port = local.argocd_node_port, protocol = null },
+  ]
 
   volumes = [
     { source = var.storage_path, destination = "/var/lib/rancher/k3s/storage", node_filters = null },
