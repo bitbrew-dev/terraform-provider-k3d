@@ -19,6 +19,8 @@ Create the storage folder first, because it must already exist on the Docker hos
 mkdir -p "$PWD/data/storage"
 ```
 
+Keep this folder between applies. On Docker Desktop, deleting and recreating it adds a short retry to the next create.
+
 ```bash
 export TF_VAR_storage_path="$PWD/data/storage"
 ```
