@@ -19,6 +19,7 @@ repos:
       rev: v6.0.0
       hooks:
         - id: check-yaml
+          exclude: ^examples/platform/charts/acme-web/templates/
           args:
             - --allow-multiple-documents
             - --unsafe

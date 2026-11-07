@@ -35,9 +35,9 @@ resource "k3d_helm_release" "runner" {
 resource "k3d_helm_release" "local" {
   cluster               = k3d_cluster.main.id
   namespace             = k3d_namespace.app.name
-  name                  = "taproom"
-  src_path              = abspath("${path.module}/../taproom/ops/charts/taproom")
-  expected_chart_digest = var.taproom_chart_digest
+  name                  = "acme-web"
+  src_path              = abspath("${path.module}/../acme-web/charts/acme-web")
+  expected_chart_digest = var.acme_web_chart_digest
   set                   = { "image.tag" = "1.0.1" }
 }
 ```

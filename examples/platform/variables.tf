@@ -13,7 +13,7 @@ variable "servers" {
 variable "agents" {
   description = "Agent nodes."
   type        = number
-  default     = 5
+  default     = 2
 }
 
 variable "k3s_image" {
@@ -70,16 +70,10 @@ variable "https_port" {
   default     = 443
 }
 
-variable "admin_ports" {
-  description = "Extra host ports, keyed by host port, with the NodePort each one reaches."
-  type        = map(number)
-  default = {
-    "11800" = 30090
-    "11801" = 30091
-    "11802" = 30092
-    "11803" = 30093
-    "11804" = 30094
-  }
+variable "argocd_port" {
+  description = "Host port for the Argo CD UI."
+  type        = number
+  default     = 8081
 }
 
 variable "istio_version" {
@@ -94,52 +88,16 @@ variable "argocd_chart_version" {
   default     = "7.7.5"
 }
 
-variable "world_path" {
-  description = "Path to a checkout of the world repository. Empty leaves out Cloudflared, Keycloak, ntfy, and ARC."
+variable "guestbook_revision" {
+  description = "Git commit of argocd-example-apps to deploy. Pin it, because HEAD is not reproducible."
   type        = string
-  default     = ""
+  default     = "8088f4c0d970abb09e250248cc97e35623447cb5"
 }
 
-variable "taproom_chart_path" {
-  description = "Path to the taproom chart. Empty leaves taproom out."
-  type        = string
-  default     = ""
-}
-
-variable "taproom_tag" {
-  description = "Image tag for taproom. The chart defaults to latest, so pin it here."
-  type        = string
-  default     = null
-}
-
-variable "aquor_chart_path" {
-  description = "Path to the aquor chart. Empty leaves aquor out."
-  type        = string
-  default     = ""
-}
-
-variable "aquor_tag" {
-  description = "Image tag for aquor. The chart's default of CHANGE_ME does not run."
-  type        = string
-  default     = null
-}
-
-variable "aquor_values" {
-  description = "Environment values for aquor, as YAML documents."
-  type        = list(string)
-  default     = []
-}
-
-variable "areo_chart_path" {
-  description = "Path to the areo chart. Empty leaves Airflow out."
-  type        = string
-  default     = ""
-}
-
-variable "dags_revision" {
-  description = "Git commit of the areo repository to deploy DAGs from. Pin it, because HEAD is not reproducible."
-  type        = string
-  default     = null
+variable "enable_secrets" {
+  description = "Create the acme-web-config Secret from secret_values and load it into acme-web."
+  type        = bool
+  default     = false
 }
 
 variable "secret_values" {

@@ -1,20 +1,14 @@
 locals {
   plain_namespaces = {
-    "argocd"      = { "istio-injection" = "disabled", name = "argocd" }
-    "keycloak"    = { "istio-injection" = "disabled" }
-    "cloudflare"  = {}
-    "arc-systems" = { "istio-injection" = "disabled", purpose = "ci", type = "control-plane" }
-    "arc-runners" = { "istio-injection" = "disabled", purpose = "ci", type = "worker-plane" }
+    "argocd"    = { "istio-injection" = "disabled" }
+    "guestbook" = { "istio-injection" = "disabled" }
   }
 
   injected_namespaces = {
-    "app"     = { purpose = "applications", type = "control-plane" }
-    "worker"  = { purpose = "worker", type = "worker-plane" }
-    "airflow" = { purpose = "workflow-automation", type = "worker-plane" }
-    "monitor" = { purpose = "monitoring", name = "monitor" }
+    "app" = { purpose = "applications" }
   }
 
-  protected_namespaces = toset(["app", "worker"])
+  protected_namespaces = toset(["app"])
 }
 
 resource "k3d_namespace" "istio_system" {
@@ -110,7 +104,7 @@ resource "k3d_manifest" "allow_same_namespace" {
   })
 }
 
-resource "k3d_manifest" "allow_monitoring" {
+resource "k3d_manifest" "allow_gateway" {
   for_each = local.protected_namespaces
 
   cluster = k3d_cluster.platform.id
@@ -118,11 +112,11 @@ resource "k3d_manifest" "allow_monitoring" {
   manifest = yamlencode({
     apiVersion = "networking.k8s.io/v1"
     kind       = "NetworkPolicy"
-    metadata   = { name = "allow-monitoring", namespace = k3d_namespace.injected[each.key].name }
+    metadata   = { name = "allow-gateway", namespace = k3d_namespace.injected[each.key].name }
     spec = {
       podSelector = {}
       policyTypes = ["Ingress"]
-      ingress     = [{ from = [{ namespaceSelector = { matchLabels = { purpose = "monitoring" } } }] }]
+      ingress     = [{ from = [{ namespaceSelector = { matchLabels = { "kubernetes.io/metadata.name" = k3d_namespace.istio_system.name } } }] }]
     }
   })
 }
