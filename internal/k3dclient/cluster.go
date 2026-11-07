@@ -442,13 +442,25 @@ func CreateCluster(ctx context.Context, spec ClusterSpec) (*ClusterState, error)
 		spec.APIPort = port
 	}
 
-	clusterConfig, err := prepareClusterConfig(ctx, spec)
-	if err != nil {
+	if _, err := prepareClusterConfig(ctx, spec); err != nil {
 		return nil, err
 	}
 
-	if err := client.ClusterRun(ctx, runtimes.SelectedRuntime, clusterConfig); err != nil {
-		return nil, rollback(ctx, spec.Name, fmt.Errorf("create cluster %q: %w", spec.Name, err))
+	err := runWithRetry(ctx, createRetryDelay,
+		func() error {
+			clusterConfig, err := prepareClusterConfig(ctx, spec)
+			if err != nil {
+				return err
+			}
+			if err := client.ClusterRun(ctx, runtimes.SelectedRuntime, clusterConfig); err != nil {
+				return fmt.Errorf("create cluster %q: %w", spec.Name, err)
+			}
+			return nil
+		},
+		func(cause error) error { return rollback(ctx, spec.Name, cause) },
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	state, err := GetCluster(ctx, spec.Name)
