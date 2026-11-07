@@ -1,6 +1,58 @@
 # Terraform Provider for k3d
 
+[![Terraform Registry](https://img.shields.io/badge/Terraform_Registry-bitbrew--dev%2Fk3d-7B42BC)](https://registry.terraform.io/providers/bitbrew-dev/k3d/latest)
+[![License: MPL-2.0](https://img.shields.io/badge/License-MPL--2.0-blue)](LICENSE)
+
 Build a whole [k3d](https://k3d.io) platform from one configuration: the cluster, its registries, Istio or Traefik, namespaces, secrets, Helm releases, and Argo CD applications. From an empty Docker host, one `terraform apply` creates all of it.
+
+## Quick start
+
+You need Terraform 1.11 or later and a running Docker daemon.
+
+```hcl
+terraform {
+  required_version = ">= 1.11"
+
+  required_providers {
+    k3d = {
+      source  = "bitbrew-dev/k3d"
+      version = "~> 1.0"
+    }
+  }
+}
+
+resource "k3d_cluster" "main" {
+  name   = "demo"
+  image  = "rancher/k3s:v1.32.4-k3s1"
+  agents = 1
+}
+
+resource "k3d_namespace" "app" {
+  cluster = k3d_cluster.main.id
+  name    = "app"
+}
+
+output "kubeconfig" {
+  value     = k3d_cluster.main.kubeconfig
+  sensitive = true
+}
+```
+
+```bash
+terraform init
+```
+
+```bash
+terraform apply
+```
+
+```bash
+terraform output -raw kubeconfig > kubeconfig.yaml
+```
+
+```bash
+kubectl --kubeconfig kubeconfig.yaml get nodes
+```
 
 ## Why this provider
 
@@ -20,32 +72,12 @@ A cluster and everything inside it can share one apply. Providers that talk to t
 | Kubernetes | `k3d_namespace`, `k3d_config_map`, `k3d_secret`, `k3d_job`, `k3d_manifest` | `k3d_namespace`, `k3d_config_map`, `k3d_secret` |
 | Platform | `k3d_helm_release`, `k3d_istio`, `k3d_argocd_application` | |
 
-Full reference: [docs/index.md](docs/index.md).
+Full reference: [Terraform Registry docs](https://registry.terraform.io/providers/bitbrew-dev/k3d/latest/docs).
 
 ## Examples
 
 - [examples/minimal](examples/minimal): a small cluster and an app, using public images only. Tested on every acceptance run.
-- [examples/coldbrew](examples/coldbrew): a full platform with Istio, Argo CD, charts from other repositories, and write-only secrets.
-
-## Using it before a release
-
-The provider is not on the Terraform Registry yet. Build it and point Terraform at it:
-
-```bash
-make build
-```
-
-```hcl
-# ~/.terraformrc
-provider_installation {
-  dev_overrides {
-    "bitbrew-dev/k3d" = "/path/to/terraform-provider-k3d/dist"
-  }
-  direct {}
-}
-```
-
-With `dev_overrides`, skip `terraform init` and run `terraform plan` directly. Terraform 1.11 or later is required.
+- [examples/platform](examples/platform): a full platform with Istio, Argo CD, charts from other repositories, and write-only secrets.
 
 ## Good to know
 
@@ -64,6 +96,26 @@ With `dev_overrides`, skip `terraform init` and run `terraform plan` directly. T
 | `make docs` | Regenerates [docs](docs) from the schemas and `examples/` |
 | `make release-check` | Validates the GoReleaser config and builds unsigned release archives into `dist/` |
 
+### Testing a local build
+
+Build the provider and point Terraform at it:
+
+```bash
+make build
+```
+
+```hcl
+# ~/.terraformrc
+provider_installation {
+  dev_overrides {
+    "bitbrew-dev/k3d" = "/path/to/terraform-provider-k3d/dist"
+  }
+  direct {}
+}
+```
+
+With `dev_overrides`, skip `terraform init` and run `terraform plan` directly.
+
 ## Releasing
 
 Run the `semantic-release` workflow on `main` and set `prompt` to `true`.
@@ -75,3 +127,7 @@ Run the `semantic-release` workflow on `main` and set `prompt` to `true`.
 If the GoReleaser job fails, the release stays a draft. Fix the cause and re-run the failed job.
 
 The workflow needs the `GPG_PRIVATE_KEY` and `PASSPHRASE` repository secrets. The key must be RSA, because the Registry does not accept the default ECC type, and its public key must be added to the Registry's signing keys.
+
+## License
+
+[Mozilla Public License 2.0](LICENSE).
