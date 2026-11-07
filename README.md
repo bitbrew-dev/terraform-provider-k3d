@@ -77,7 +77,7 @@ Full reference: [Terraform Registry docs](https://registry.terraform.io/provider
 ## Examples
 
 - [examples/minimal](examples/minimal): a small cluster and an app, using public images only. Tested on every acceptance run.
-- [examples/platform](examples/platform): a full platform with Istio, Argo CD, charts from other repositories, and write-only secrets.
+- [examples/platform](examples/platform): a full platform with Istio, Argo CD, a local chart, and write-only secrets.
 
 ## Good to know
 
@@ -85,6 +85,7 @@ Full reference: [Terraform Registry docs](https://registry.terraform.io/provider
 - **Replacing a cluster:** objects recreate with it only if they use `cluster = k3d_cluster.<name>.id`, not a literal name.
 - **Remote Docker:** `docker_host` accepts `tcp://` and `ssh://`, but only local sockets are tested so far. Set `api.host` and `api.port` for a remote host.
 - **Removing a cluster keeps host data:** `volumes` sources live on the Docker host and are not deleted.
+- **Multi-server create can fail:** a create sometimes stops with `failed to get ready` when `server-0` restarts during startup. Changes are rolled back, so run `terraform apply` again.
 
 ## Development
 
